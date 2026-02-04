@@ -2348,6 +2348,162 @@
 
     <script>
         // ============================================================================
+        // SOUND EFFECTS
+        // ============================================================================
+        
+        // Create audio context for sound effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Button click sound (subtle)
+        function playButtonClick() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Swing button sound (different from regular click)
+        function playSwingSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.15);
+            oscillator.type = 'triangle';
+            
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.15);
+        }
+        
+        // Correct answer sound (exciting success chime with harmony)
+        function playCorrectSound() {
+            // Create a rich, celebratory chord progression
+            const chordProgression = [
+                { time: 0, notes: [523.25, 659.25, 783.99] }, // C Major chord (C, E, G)
+                { time: 0.12, notes: [587.33, 739.99, 880.00] }, // D Major chord (D, F#, A)
+                { time: 0.24, notes: [659.25, 830.61, 987.77] }  // E Major chord (E, G#, B)
+            ];
+            
+            chordProgression.forEach(chord => {
+                chord.notes.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    const startTime = audioContext.currentTime + chord.time;
+                    const duration = 0.4;
+                    
+                    // Smooth envelope
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.12, startTime + 0.02);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                });
+            });
+            
+            // Add a bright "ding" on top
+            const dingOsc = audioContext.createOscillator();
+            const dingGain = audioContext.createGain();
+            
+            dingOsc.connect(dingGain);
+            dingGain.connect(audioContext.destination);
+            
+            dingOsc.frequency.setValueAtTime(2093, audioContext.currentTime); // High C
+            dingOsc.frequency.exponentialRampToValueAtTime(3136, audioContext.currentTime + 0.15); // High G
+            dingOsc.type = 'sine';
+            
+            dingGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+            dingGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            dingOsc.start(audioContext.currentTime);
+            dingOsc.stop(audioContext.currentTime + 0.3);
+        }
+        
+        // Wrong answer sound (dramatic descending effect)
+        function playWrongSound() {
+            // Create a dramatic "wrong" sound with multiple layers
+            
+            // Layer 1: Deep descending bass
+            const bass = audioContext.createOscillator();
+            const bassGain = audioContext.createGain();
+            
+            bass.connect(bassGain);
+            bassGain.connect(audioContext.destination);
+            
+            bass.frequency.setValueAtTime(180, audioContext.currentTime);
+            bass.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.35);
+            bass.type = 'sawtooth';
+            
+            bassGain.gain.setValueAtTime(0.25, audioContext.currentTime);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.35);
+            
+            bass.start(audioContext.currentTime);
+            bass.stop(audioContext.currentTime + 0.35);
+            
+            // Layer 2: Dissonant tritone (devil's interval - sounds "wrong")
+            const dissonance1 = audioContext.createOscillator();
+            const dissonance2 = audioContext.createOscillator();
+            const disGain = audioContext.createGain();
+            
+            dissonance1.connect(disGain);
+            dissonance2.connect(disGain);
+            disGain.connect(audioContext.destination);
+            
+            dissonance1.frequency.value = 329.63; // E
+            dissonance2.frequency.value = 466.16; // A# (tritone)
+            dissonance1.type = 'square';
+            dissonance2.type = 'square';
+            
+            disGain.gain.setValueAtTime(0.08, audioContext.currentTime);
+            disGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+            
+            dissonance1.start(audioContext.currentTime);
+            dissonance2.start(audioContext.currentTime);
+            dissonance1.stop(audioContext.currentTime + 0.25);
+            dissonance2.stop(audioContext.currentTime + 0.25);
+            
+            // Layer 3: Harsh "buzz" overtone
+            const buzz = audioContext.createOscillator();
+            const buzzGain = audioContext.createGain();
+            
+            buzz.connect(buzzGain);
+            buzzGain.connect(audioContext.destination);
+            
+            buzz.frequency.setValueAtTime(240, audioContext.currentTime + 0.05);
+            buzz.frequency.linearRampToValueAtTime(120, audioContext.currentTime + 0.3);
+            buzz.type = 'sawtooth';
+            
+            buzzGain.gain.setValueAtTime(0.15, audioContext.currentTime + 0.05);
+            buzzGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            buzz.start(audioContext.currentTime + 0.05);
+            buzz.stop(audioContext.currentTime + 0.3);
+        }
+        
+        // ============================================================================
         // FIREBASE CONFIGURATION
         // ============================================================================
         // 🔥 FIREBASE SETUP INSTRUCTIONS:
@@ -4303,6 +4459,7 @@
         }
 
         function selectClub(clubKey) {
+            playButtonClick();
             gameState.selectedClub = clubKey;
             renderClubSelection();
             checkHoleOutAvailability();
@@ -4370,6 +4527,7 @@
                 if (difficulty !== 'hard') return; // Block Average and Easy
             }
             
+            playButtonClick();
             gameState.selectedDifficulty = difficulty;
             
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -4451,6 +4609,7 @@
         function useHoleOut() {
             if (gameState.powerUps.holeOut <= 0) return;
             
+            playButtonClick();
             // Show explanation modal
             const modal = document.getElementById('holeOutModal');
             document.getElementById('holeOutModalCount').textContent = gameState.powerUps.holeOut;
@@ -4458,6 +4617,7 @@
         }
         
         function confirmHoleOut() {
+            playButtonClick();
             // Hide modal
             document.getElementById('holeOutModal').style.display = 'none';
             
@@ -4477,6 +4637,7 @@
         }
         
         function cancelHoleOut() {
+            playButtonClick();
             // Just close the modal, don't use the power-up
             document.getElementById('holeOutModal').style.display = 'none';
         }
@@ -4484,6 +4645,7 @@
         function useBomb() {
             if (gameState.powerUps.bomb <= 0) return;
             
+            playButtonClick();
             // Show explanation modal
             const modal = document.getElementById('bombModal');
             document.getElementById('bombModalCount').textContent = gameState.powerUps.bomb;
@@ -4491,6 +4653,7 @@
         }
         
         function confirmBomb() {
+            playButtonClick();
             // Hide modal
             document.getElementById('bombModal').style.display = 'none';
             
@@ -4506,6 +4669,7 @@
         }
         
         function cancelBomb() {
+            playButtonClick();
             // Just close the modal, don't use the power-up
             document.getElementById('bombModal').style.display = 'none';
         }
@@ -4513,6 +4677,7 @@
         function takeShot() {
             if (!gameState.selectedClub || !gameState.selectedDifficulty) return;
             
+            playSwingSound();
             showTriviaQuestion();
         }
 
@@ -5232,9 +5397,10 @@
                         gameState.lastShotDistance = gameState.currentDistance;
                         gameState.lastShotPosition = gameState.currentDistance;
                         
-                        // Track if this is a putt
+                        // Track if this is a putt AND increment putt attempts
                         if (gameState.onGreen && gameState.selectedClub === 'putter') {
                             gameState.hasPutted = true;
+                            gameState.puttAttempts++; // INCREMENT ON CORRECT PUTT
                         }
                         
                         // Check if shot goes over the green
@@ -5324,6 +5490,7 @@
                             }
                         }
                         
+                        // INCREMENT PUTT ATTEMPTS ON WRONG ANSWER TOO
                         if (gameState.onGreen) {
                             gameState.puttAttempts++;
                             // Re-render club selection to update difficulty automatically
@@ -5415,6 +5582,13 @@
             const trees = document.getElementById('trees');
             const ball = document.getElementById('golfBallAnim');
             const resultText = document.getElementById('resultText');
+            
+            // Play sound effect
+            if (correct) {
+                playCorrectSound();
+            } else {
+                playWrongSound();
+            }
             
             container.style.display = 'flex';
             
@@ -6079,7 +6253,7 @@
             });
             text += '━━━━━━━━━━━━━━━\n';
             text += `Total: ${gameState.totalScore} (${parText})\n`;
-            text += 'Play at strokeofgenius.com';
+            text += 'Play at https://blakescampbell.github.io/StrokeofGenius/';
             
             navigator.clipboard.writeText(text).then(() => {
                 const toast = document.getElementById('shareToast');
